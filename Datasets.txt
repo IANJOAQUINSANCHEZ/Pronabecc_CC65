@@ -1,0 +1,26 @@
+REVISANDO DATASETS
+
+POSTULANTES: 
+
+Ubigeo de la zona de origen de los postulantes a becas otorgadas por el PRONABEC.
+
+Lista becarios que perdieron becas, el motivo y la convocatoria a la que pertenecen.
+
+Notas promedio de los becarios, agrupados por semestre. (YA ESTAN BECADOS) 
+
+PUEDE SER: Nota Promedio de los postulantes, agrupados por región, indicando la institución de estudio a la cual pertenecen.
+
+PUEDE SER: Estados que se le asignan a los becarios. 
+
+INVESTIGAR: Evaluación de solicitudes de los interesados a Crédito18.
+
+Datos de los solicitantes a la modalidad de crédito: Crédito 18.
+
+api key : 1462f6479a5eca39725798b1ee300bd8d5de3a4ae388
+
+BECAS: 
+Lista de convocatorias a becas realizadas en la Institución.
+
+PUEDE SER: Lista de convocatorias a becas realizadas, agrupadas por carrera y sede.
+
+
