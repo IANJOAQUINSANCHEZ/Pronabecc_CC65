@@ -13,11 +13,11 @@ func main() {
 	tiempoInicio := time.Now()
 	archivoInput := "Becas_1M_Limpio.csv"
 
-	fmt.Printf("\n🔍 Iniciando Análisis Concurrente de Nulos en: %s\n", archivoInput)
+	fmt.Printf("\nIniciando Análisis Concurrente de Nulos en: %s\n", archivoInput)
 
 	in, err := os.Open(archivoInput)
 	if err != nil {
-		fmt.Printf("❌ Error al abrir %s: %v\n", archivoInput, err)
+		fmt.Printf("Error al abrir %s: %v\n", archivoInput, err)
 		return
 	}
 	defer in.Close()
@@ -28,7 +28,7 @@ func main() {
 	// Leer la primera fila para obtener los nombres de las columnas
 	cabeceras, err := lector.Read()
 	if err != nil {
-		fmt.Printf("❌ Error al leer cabeceras: %v\n", err)
+		fmt.Printf("Error al leer cabeceras: %v\n", err)
 		return
 	}
 
@@ -49,21 +49,19 @@ func main() {
 		go func() {
 			defer wg.Done()
 
-			// 1. Estado Local (Para evitar pelear por el Mutex en cada fila)
+			// 1. Estado Local
 			nulosLocales := make([]int, numColumnas)
 			filasLocales := 0
 
 			// 2. Procesamiento (Map)
 			for fila := range jobs {
 				filasLocales++
-				// Solo analizamos hasta donde tenga columnas la fila para evitar "index out of range"
 				limite := len(fila)
 				if limite > numColumnas {
 					limite = numColumnas
 				}
 
 				for i := 0; i < limite; i++ {
-					// En CSV, un nulo suele ser un string vacío o solo espacios
 					if fila[i] == "" || fila[i] == " " {
 						nulosLocales[i]++
 					}
@@ -71,7 +69,6 @@ func main() {
 			}
 
 			// 3. Volcado final al Estado Global (Reduce)
-			// SECCIÓN CRÍTICA: Aquí usamos el candado de forma eficiente
 			mu.Lock()
 			totalFilasGlobal += filasLocales
 			for i := 0; i < numColumnas; i++ {
@@ -97,8 +94,8 @@ func main() {
 	// Esperamos a que todos terminen de contar
 	wg.Wait()
 
-	// --- IMPRIMIR RESULTADOS ---
-	fmt.Printf("\n📊 REPORTE DE CALIDAD DE DATOS 📊\n")
+	// --- RESULTADOS ---
+	fmt.Printf("\nREPORTE DE CALIDAD DE DATOS\n")
 	fmt.Printf("==================================================\n")
 	fmt.Printf("Total de registros analizados: %d\n", totalFilasGlobal)
 	fmt.Printf("==================================================\n")
@@ -108,16 +105,16 @@ func main() {
 		porcentaje := (float64(totalNulosGlobal[i]) / float64(totalFilasGlobal)) * 100
 		if totalNulosGlobal[i] > 0 {
 			hayNulos = true
-			fmt.Printf("⚠️  Columna '%s': %d nulos (%.2f%%)\n", cabeceras[i], totalNulosGlobal[i], porcentaje)
+			fmt.Printf("Columna '%s': %d nulos (%.2f%%)\n", cabeceras[i], totalNulosGlobal[i], porcentaje)
 		} else {
-			fmt.Printf("✅  Columna '%s': 0 nulos (Impecable)\n", cabeceras[i])
+			fmt.Printf("Columna '%s': 0 nulos (Impecable)\n", cabeceras[i])
 		}
 	}
 
 	if !hayNulos {
-		fmt.Printf("\n✨ ¡Tu dataset está perfectamente limpio! ✨\n")
+		fmt.Printf("\n¡Tu dataset está perfectamente limpio!\n")
 	}
 
 	fmt.Printf("==================================================\n")
-	fmt.Printf("⏱️ Tiempo de análisis: %s\n\n", time.Since(tiempoInicio))
+	fmt.Printf("Tiempo de análisis: %s\n\n", time.Since(tiempoInicio))
 }
