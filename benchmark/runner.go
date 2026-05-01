@@ -86,7 +86,7 @@ func main() {
 	imprimirTabla(resultados)
 	guardarCSV(resultados)
 
-	fmt.Println("\n✅ Benchmark completo. Resultados guardados en benchmark_results.csv")
+	fmt.Println("\n Benchmark completo. Resultados guardados en benchmark_results.csv")
 }
 
 // COMPILAR EL PROGRAMA
@@ -178,7 +178,7 @@ func imprimirTabla(resultados []ResultadoBench) {
 	// DETECTAR RETORNO DISMINUIDO
 	for i := 2; i < len(resultados); i++ {
 		if resultados[i].Speedup < resultados[i-1].Speedup {
-			fmt.Printf("⚠️  Punto de retorno disminuido detectado en %d workers\n", resultados[i].Workers)
+			fmt.Printf("  Punto de retorno disminuido detectado en %d workers\n", resultados[i].Workers)
 			break
 		}
 	}
