@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"pronabecc/internal"
+	"Pronabecc_CC65/internal"
 )
 
 func main() {
@@ -25,7 +25,7 @@ func main() {
 	// FASE 1: CARGA DEL CATÁLOGO DE BECAS
 	fmt.Print("Cargando catálogo de becas...")
 	tCarga := time.Now()
-	becas, err := internal.CargarBecas("Becas_1M_Limpio.csv")
+	becas, err := internal.CargarBecas("Becas_1M_Definitivo.csv")
 	if err != nil {
 		fmt.Printf("\nError: %v\n", err)
 		return
