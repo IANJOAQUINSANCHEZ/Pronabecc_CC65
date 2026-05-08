@@ -27,8 +27,8 @@ func main() {
 	}
 	fmt.Printf(" %d becas cargadas en %s\n", len(becas), time.Since(tCarga))
 
-	// INDEXAR POR NIVEL PARA PODA
-	indicePorNivel := internal.IndexarBecasPorNivel(becas)
+	// INDEXAR POR NIVEL+GESTIÓN PARA PODA COMPUESTA O(1)
+	indicePorNivel := internal.IndexarBecasCompuesto(becas)
 	fmt.Printf("Índice creado: %d niveles distintos\n", len(indicePorNivel))
 	for nivel, grupo := range indicePorNivel {
 		fmt.Printf("  [%s]: %d becas\n", nivel, len(grupo))

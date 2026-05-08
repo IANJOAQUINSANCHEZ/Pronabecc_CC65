@@ -32,8 +32,8 @@ func main() {
 	}
 	fmt.Printf(" %d becas cargadas en %s\n", len(becas), time.Since(tCarga))
 
-	// INDEXAR POR NIVEL — ESTRUCTURA READ-ONLY COMPARTIDA ENTRE WORKERS (SIN LOCKS)
-	indicePorNivel := internal.IndexarBecasPorNivel(becas)
+	// INDEXAR POR NIVEL+GESTIÓN PARA PODA COMPUESTA O(1)
+	indicePorNivel := internal.IndexarBecasCompuesto(becas)
 	fmt.Printf("Índice creado: %d niveles distintos\n", len(indicePorNivel))
 
 	// FASE 2: CARGA DE ESTUDIANTES
