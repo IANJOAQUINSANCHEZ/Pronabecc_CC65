@@ -36,16 +36,8 @@ func main() {
 	indicePorNivel := internal.IndexarBecasCompuesto(becas)
 	fmt.Printf("Índice creado: %d niveles distintos\n", len(indicePorNivel))
 
-	// FASE 2: CARGA DE ESTUDIANTES
-	fmt.Print("Cargando perfiles de estudiantes...")
-	tEst := time.Now()
-	estudiantes, err := internal.CargarEstudiantes("Estudiantes_Final.csv")
-	if err != nil {
-		fmt.Printf("\nError: %v\n", err)
-		return
-	}
-	fmt.Printf(" %d estudiantes cargados en %s\n", len(estudiantes), time.Since(tEst))
-
+	// FASE 2: CARGA DE ESTUDIANTES (STREAMING DELEGADO AL PRODUCTOR)
+	fmt.Println("La carga de estudiantes se realizará por flujo (streaming).")
 	// FASE 3: WORKER POOL CON FAN-OUT / FAN-IN
 	fmt.Printf("\nIniciando matching concurrente con %d workers...\n", *numWorkers)
 	tMatch := time.Now()
@@ -77,6 +69,12 @@ func main() {
 		wgWorkers.Add(1)
 		go func() {
 			defer wgWorkers.Done()
+			defer func() {
+				if r := recover(); r != nil {
+					fmt.Printf("[ALERTA] Worker recuperado de un panic: %v\n", r)
+				}
+			}()
+			
 			// CADA WORKER LEE DEL CANAL JOBS Y PROCESA
 			for est := range jobs {
 				recs := internal.RecomendarConIndice(est, indicePorNivel, becas)
@@ -89,10 +87,13 @@ func main() {
 	}
 
 	// PRODUCTOR
-	for _, est := range estudiantes {
-		jobs <- est
-	}
-	close(jobs)
+	go func() {
+		err := internal.StreamEstudiantes("Estudiantes_Final.csv", jobs)
+		if err != nil {
+			fmt.Printf("Error en streaming de estudiantes: %v\n", err)
+		}
+		close(jobs)
+	}()
 
 	// ESPERAMOS A QUE TODOS LOS WORKERS TERMINEN
 	wgWorkers.Wait()
@@ -108,7 +109,7 @@ func main() {
 
 	// MÉTRICAS FINALES
 	duracionTotal := time.Since(tiempoInicio)
-	throughput := float64(len(estudiantes)) / duracionTotal.Seconds()
+	throughput := float64(totalEscritos) / duracionTotal.Seconds()
 
 	var memStats runtime.MemStats
 	runtime.ReadMemStats(&memStats)
