@@ -37,7 +37,7 @@ func main() {
 	// FASE 2: CARGA DE ESTUDIANTES
 	fmt.Print("Cargando perfiles de estudiantes...")
 	tEst := time.Now()
-	estudiantes, err := internal.CargarEstudiantes("Estudiantes_100k_Limpio.csv")
+	estudiantes, err := internal.CargarEstudiantes("Estudiantes_Final.csv")
 	if err != nil {
 		fmt.Printf("\nError: %v\n", err)
 		return

@@ -48,8 +48,8 @@ func calcularScoreRapido(est *Estudiante, beca *Beca) int {
 		}
 	}
 
-	// GESTION
-	if beca.TipoGestion != "" {
+	// GESTION (Match real: verifica si la gestión de la beca coincide con el perfil del estudiante)
+	if beca.TipoGestion != "" && strings.Contains(est.TipoEstudiante, beca.TipoGestion) {
 		score += PesoGestion
 	}
 
