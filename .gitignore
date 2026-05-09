@@ -1,0 +1,12 @@
+# Archivos de datos pesados
+*.csv
+!benchmark_results.csv
+
+# Ejecutables
+*.exe
+main_con
+main_sec
+
+# Temporales
+temp/
+datos_raw/
