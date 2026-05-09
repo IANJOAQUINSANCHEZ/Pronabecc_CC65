@@ -102,8 +102,8 @@ func CargarEstudiantes(ruta string) ([]*Estudiante, error) {
 			Convocatoria:      strings.ToUpper(strings.TrimSpace(fila[3])),
 			TipoEstudiante:    strings.ToUpper(strings.TrimSpace(fila[4])),
 			IngresosMensuales: ingresos,
-			Genero:            strings.TrimSpace(fila[13]),
-			Distrito:          strings.ToUpper(strings.TrimSpace(fila[14])),
+			Genero:            strings.TrimSpace(fila[12]),
+			Distrito:          strings.ToUpper(strings.TrimSpace(fila[13])),
 		})
 	}
 

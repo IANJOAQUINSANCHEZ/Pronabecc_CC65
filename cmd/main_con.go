@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"pronabecc/internal"
+	"Pronabecc_CC65/internal"
 )
 
 func main() {
@@ -25,21 +25,21 @@ func main() {
 	// FASE 1: CARGA DEL CATÁLOGO DE BECAS
 	fmt.Print("Cargando catálogo de becas...")
 	tCarga := time.Now()
-	becas, err := internal.CargarBecas("Becas_1M_Limpio.csv")
+	becas, err := internal.CargarBecas("Becas_1M_Definitivo.csv")
 	if err != nil {
 		fmt.Printf("\nError: %v\n", err)
 		return
 	}
 	fmt.Printf(" %d becas cargadas en %s\n", len(becas), time.Since(tCarga))
 
-	// INDEXAR POR NIVEL — ESTRUCTURA READ-ONLY COMPARTIDA ENTRE WORKERS (SIN LOCKS)
-	indicePorNivel := internal.IndexarBecasPorNivel(becas)
+	// INDEXAR POR NIVEL+GESTIÓN PARA PODA COMPUESTA O(1)
+	indicePorNivel := internal.IndexarBecasCompuesto(becas)
 	fmt.Printf("Índice creado: %d niveles distintos\n", len(indicePorNivel))
 
 	// FASE 2: CARGA DE ESTUDIANTES
 	fmt.Print("Cargando perfiles de estudiantes...")
 	tEst := time.Now()
-	estudiantes, err := internal.CargarEstudiantes("Estudiantes_100k_Limpio.csv")
+	estudiantes, err := internal.CargarEstudiantes("Estudiantes_Final.csv")
 	if err != nil {
 		fmt.Printf("\nError: %v\n", err)
 		return
