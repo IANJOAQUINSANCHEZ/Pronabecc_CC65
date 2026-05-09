@@ -6,6 +6,18 @@ import (
 	"os"
 )
 
+// SANITIZA TEXTO PARA PREVENIR CSV INJECTION
+func SanitizeCSV(val string) string {
+	if val == "" {
+		return val
+	}
+	firstChar := val[0]
+	if firstChar == '=' || firstChar == '+' || firstChar == '-' || firstChar == '@' || firstChar == '\t' || firstChar == '\r' {
+		return "'" + val
+	}
+	return val
+}
+
 // ESCRIBE LAS RECOMENDACIONES EN UN ARCHIVO CSV.
 func EscribirResultados(ruta string, resultados []ResultadoEstudiante) error {
 	file, err := os.Create(ruta)
@@ -30,11 +42,11 @@ func EscribirResultados(ruta string, resultados []ResultadoEstudiante) error {
 			writer.Write([]string{
 				rec.IDPostulante,
 				fmt.Sprintf("%d", rec.Rank),
-				rec.BecaNombre,
+				SanitizeCSV(rec.BecaNombre),
 				fmt.Sprintf("%d", rec.Score),
-				rec.Nivel,
-				rec.Institucion,
-				rec.Sede,
+				SanitizeCSV(rec.Nivel),
+				SanitizeCSV(rec.Institucion),
+				SanitizeCSV(rec.Sede),
 			})
 		}
 	}
@@ -65,11 +77,11 @@ func EscribirResultadosStream(ruta string, resultados <-chan ResultadoEstudiante
 			writer.Write([]string{
 				rec.IDPostulante,
 				fmt.Sprintf("%d", rec.Rank),
-				rec.BecaNombre,
+				SanitizeCSV(rec.BecaNombre),
 				fmt.Sprintf("%d", rec.Score),
-				rec.Nivel,
-				rec.Institucion,
-				rec.Sede,
+				SanitizeCSV(rec.Nivel),
+				SanitizeCSV(rec.Institucion),
+				SanitizeCSV(rec.Sede),
 			})
 		}
 		total++

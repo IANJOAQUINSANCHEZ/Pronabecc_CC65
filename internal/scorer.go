@@ -3,7 +3,15 @@ package internal
 import (
 	"container/heap"
 	"strings"
+	"sync"
 )
+
+var heapPool = sync.Pool{
+	New: func() interface{} {
+		h := make(minHeap, 0, TopN+1)
+		return &h
+	},
+}
 
 // PESOS DEL SISTEMA DE SCORING CONTENT-BASED
 const (
@@ -72,8 +80,9 @@ func calcularScoreRapido(est *Estudiante, beca *Beca) int {
 
 // EJECUTA PODA POR CLAVE COMPUESTA + SCORING + TOP-5.
 func RecomendarConIndice(est *Estudiante, indice map[string][]*Beca, todasBecas []*Beca) []Recomendacion {
-	h := &minHeap{}
-	heap.Init(h)
+	h := heapPool.Get().(*minHeap)
+	*h = (*h)[:0] // Limpiar el slice para reutilizarlo
+	defer heapPool.Put(h)
 
 	// PODA AGRESIVA POR CLAVE COMPUESTA
 	becasCandidatas := indice[est.TipoEstudiante]

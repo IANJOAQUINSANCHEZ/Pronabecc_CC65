@@ -110,6 +110,60 @@ func CargarEstudiantes(ruta string) ([]*Estudiante, error) {
 	return estudiantes, nil
 }
 
+// LEE Y ENVIA LOS ESTUDIANTES AL CANAL EN MODO STREAMING, EVITANDO CARGARLOS TODOS EN MEMORIA
+func StreamEstudiantes(ruta string, jobs chan<- *Estudiante) error {
+	file, err := os.Open(ruta)
+	if err != nil {
+		return fmt.Errorf("no se pudo abrir %s: %w", ruta, err)
+	}
+	defer file.Close()
+
+	lector := csv.NewReader(file)
+	lector.FieldsPerRecord = -1
+	lector.LazyQuotes = true
+
+	if _, err := lector.Read(); err != nil {
+		return fmt.Errorf("error leyendo cabecera: %w", err)
+	}
+
+	for {
+		fila, err := lector.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			continue
+		}
+		if len(fila) < 15 {
+			continue
+		}
+
+		idPostulante := strings.TrimSpace(fila[2])
+		if idPostulante == "" {
+			continue
+		}
+
+		ingresos := 0.0
+		if val := strings.TrimSpace(fila[9]); val != "" {
+			ingresos, _ = strconv.ParseFloat(val, 64)
+		}
+
+		est := &Estudiante{
+			IDPostulante:      idPostulante,
+			Convocatoria:      strings.ToUpper(strings.TrimSpace(fila[3])),
+			TipoEstudiante:    strings.ToUpper(strings.TrimSpace(fila[4])),
+			IngresosMensuales: ingresos,
+			Genero:            strings.TrimSpace(fila[12]),
+			Distrito:          strings.ToUpper(strings.TrimSpace(fila[13])),
+		}
+		
+		jobs <- est
+	}
+
+	return nil
+}
+
+
 // CLAVE COMPUESTA NIVEL PARA PODA O(1).
 func IndexarBecasPorNivel(becas []*Beca) map[string][]*Beca {
 	indice := make(map[string][]*Beca)

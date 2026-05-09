@@ -34,24 +34,26 @@ func main() {
 		fmt.Printf("  [%s]: %d becas\n", nivel, len(grupo))
 	}
 
-	// FASE 2: CARGA DE ESTUDIANTES
-	fmt.Print("Cargando perfiles de estudiantes...")
-	tEst := time.Now()
-	estudiantes, err := internal.CargarEstudiantes("Estudiantes_Final.csv")
-	if err != nil {
-		fmt.Printf("\nError: %v\n", err)
-		return
-	}
-	fmt.Printf(" %d estudiantes cargados en %s\n", len(estudiantes), time.Since(tEst))
+	// FASE 2: CARGA DE ESTUDIANTES (STREAMING)
+	fmt.Println("La carga de estudiantes se realizará por flujo (streaming).")
 
 	// FASE 3: MATCHING SECUENCIAL — UN ESTUDIANTE A LA VEZ
 	fmt.Println("\nIniciando matching secuencial...")
 	tMatch := time.Now()
 
-	resultados := make([]internal.ResultadoEstudiante, 0, len(estudiantes))
+	estudiantesChan := make(chan *internal.Estudiante, 1000)
+	go func() {
+		err := internal.StreamEstudiantes("Estudiantes_Final.csv", estudiantesChan)
+		if err != nil {
+			fmt.Printf("Error en streaming de estudiantes: %v\n", err)
+		}
+		close(estudiantesChan)
+	}()
+
+	resultados := make([]internal.ResultadoEstudiante, 0, 100000)
 	procesados := 0
 
-	for _, est := range estudiantes {
+	for est := range estudiantesChan {
 		recs := internal.RecomendarConIndice(est, indicePorNivel, becas)
 		resultados = append(resultados, internal.ResultadoEstudiante{
 			IDPostulante:    est.IDPostulante,
@@ -62,11 +64,7 @@ func main() {
 		if procesados%10000 == 0 {
 			elapsed := time.Since(tMatch)
 			rate := float64(procesados) / elapsed.Seconds()
-			eta := time.Duration(float64(len(estudiantes)-procesados)/rate) * time.Second
-			fmt.Printf("  Procesados: %d/%d (%.1f%%) — %.0f est/s — ETA: %s\n",
-				procesados, len(estudiantes),
-				float64(procesados)/float64(len(estudiantes))*100,
-				rate, eta)
+			fmt.Printf("  Procesados: %d — %.0f est/s\n", procesados, rate)
 		}
 	}
 
@@ -85,7 +83,7 @@ func main() {
 
 	// MÉTRICAS FINALES
 	duracionTotal := time.Since(tiempoInicio)
-	throughput := float64(len(estudiantes)) / duracionTotal.Seconds()
+	throughput := float64(procesados) / duracionTotal.Seconds()
 
 	var memStats runtime.MemStats
 	runtime.ReadMemStats(&memStats)
@@ -93,7 +91,7 @@ func main() {
 	fmt.Println("\n==========================================================")
 	fmt.Println(" RESUMEN SECUENCIAL")
 	fmt.Println("==========================================================")
-	fmt.Printf("  Estudiantes procesados: %d\n", len(estudiantes))
+	fmt.Printf("  Estudiantes procesados: %d\n", procesados)
 	fmt.Printf("  Becas en catálogo:      %d\n", len(becas))
 	fmt.Printf("  Tiempo de matching:     %s\n", duracionMatch)
 	fmt.Printf("  Tiempo total:           %s\n", duracionTotal)
